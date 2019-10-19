@@ -11,9 +11,10 @@ Last Modified: 10/13/2019
 #include <bitset>
 #include <tuple>
 #include <algorithm>
+#include <regex>
 
 using namespace std;
-
+/*
 class MorseChar
 {
 private:
@@ -36,7 +37,7 @@ public:
 
 	}
 };
-
+*/
 class MorseTable
 {
 private:
@@ -44,6 +45,20 @@ private:
 	int size;
 	pair<char, string> dash;
 	pair<char, string> dot;
+
+	void setup()
+	{
+		regex rdash("-");
+		regex rdot("/.");
+		string s;
+		for (int i = 0; i < 39; i++)
+		{
+			s = get<1>(mTable[i]);
+			s = regex_replace(s, rdash, dash.second);
+			s = regex_replace(s, rdot, dot.second);
+			get<2>(mTable[i]) = bitset<10>(s);
+		}
+	}
 public:
 	MorseTable()
 	{
@@ -93,25 +108,29 @@ public:
 		get<0>(mTable[36]) = 'X';	get<1>(mTable[0]) = "-..-";
 		get<0>(mTable[37]) = 'Y';	get<1>(mTable[0]) = "-.--";
 		get<0>(mTable[38]) = 'Z';	get<1>(mTable[0]) = "--..";
+
+		setup();
 	}
 
-	void setup()
+	int getSize()
 	{
-		for (int i = 0; i < 39; i++)
-		{
+		return size;
+	}
 
-		}
+	vector<tuple<char, string, bitset<10>>> getmTable()
+	{
+		return mTable;
 	}
 };
 
-template <class T>
+template <typename T>
 class HashTable
 {
 private:
 	vector<T> table;
-	int hash(bitset<10> bs) const
+	int hash(int num) const
 	{
-		return bs.to_ulong();
+		return num;
 	}
 	int count;
 	int size;
@@ -140,22 +159,138 @@ public:
 		return size;
 	}
 
-	bool insert(T value)
+	bool insert(T item, int get(T&))
+	{
+		int key = get(item);
+		int hashValue = hash(key);
+		if (table[hashValue] == NULL)
+		{
+			count++;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	bool remove(T item, int get(T&))
+	{
+		int key = get(item);
+		int hashValue = hash(key);
+		if (table[hashValue] != NULL)
+		{
+			table[hashValue] = NULL;
+			count--;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	bool search(T item, T& returnvalue, int get(T&))
+	{
+		int key = get(item);
+		int hashValue = hash(key);
+		if (table[hashValue] != NULL)
+		{
+			returnvalue = table[hashValue];
+			return true;
+		}
+		else
+			return false;
+	}
+
+	bool quickSearch(int hash, T& returnvalue)
+	{
+		if (table[hash] != NULL)
+		{
+			returnvalue = table[hash];
+			return true;
+		}
+		else
+			return false;
+	}
+};
+
+template <typename T>
+class Node
+{
+private:
+	T data;
+	Node<T>* left;
+	Node<T>* right;
+public:
+	Node()
 	{
 
 	}
 
-	bool remove()
+	Node(T d)
+	{
+		data = d;
+	}
+
+	~Node()
 	{
 
 	}
 
-	bool search()
+	T getData()
+	{
+		return data;
+	}
+
+	void setData(T d)
+	{
+		data = d;
+	}
+
+	virtual Node* deCode() = 0;
+};
+
+template <typename T>
+class Branch : public Node<T>
+{
+public:
+	Node<T>* deCode(bool bin)
+	{
+		if (bin)
+			return right;
+		else
+			return left;
+	}
+};
+
+template <typename T>
+class Leaf: public Node<T>
+{
+public:
+	Node<T>* deCode(bool bin)
+	{
+		return this;
+	}
+};
+
+class HuffmanTree
+{
+private:
+	Node<int>* rootPtr;
+	priority_queue<int, vector<int>, greater<int>> priQue;
+public:
+	HuffmanTree()
+	{
+
+	}
+
+	~HuffmanTree()
+	{
+
+	}
+	
+	Node<int>* decode(bool)
 	{
 
 	}
 };
-
 
 class Decrypt	//Get a bool from the input file, nodePtr->decode(bool), loop until the nodePtr does not change and then get the data.
 				//Using the bool when the nodePte doesn't change to start next decode
