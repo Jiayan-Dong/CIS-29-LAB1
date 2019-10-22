@@ -9,151 +9,318 @@ Last Modified: 10/13/2019
 #include <vector>
 #include <queue>
 #include <bitset>
-#include <tuple>
+#include <regex>
 #include <algorithm>
 
 using namespace std;
 
 class MorseChar
 {
-private:
+protected:
 	char character;
 	string morse;
-	bitset<10> bSet;
 public:
 	MorseChar()
 	{
 		character = 0;
 		morse = "";
 	}
+
 	MorseChar(char c, string m)
 	{
 		character = c;
 		morse = m;
 	}
-	void setMorseChar()
-	{
 
+	void setCharacter(char c)
+	{
+		character = c;
+	}
+
+	void setMorse(string m)
+	{
+		morse = m;
+	}
+};
+
+class MorseCharBitset : public MorseChar
+{
+private:
+	bitset<10> bset;
+	void convertBitset()
+	{
+		regex rdot("[.]");
+		regex rdash("[-]");
+		string mdot = "10";
+		string mdash = "01";
+		string s = regex_replace(morse, rdot, mdot);
+		s = regex_replace(s, rdash, mdot);
+		bitset<10> temp(s);
+		bset = temp;
+	}
+
+public:
+	MorseCharBitset()
+	{
+		MorseChar();
+	}
+
+	MorseCharBitset(char c, string m)
+	{
+		MorseChar(c, m);
+		convertBitset();
+	}
+
+	void setMorseChar(char c, string m)
+	{
+		character = c;
+		morse = m;
+		convertBitset();
+	}
+
+	bitset<10> getBset()
+	{
+		return bset;
+	}
+
+	bool operator < (const MorseCharBitset &mcb)
+	{
+		return this->bset.to_ulong() < mcb.bset.to_ulong();
+	}
+
+	bool operator == (const MorseCharBitset& mcb)
+	{
+		return this->bset.to_ulong() == mcb.bset.to_ulong();
+	}
+
+	bool operator > (const MorseCharBitset& mcb)
+	{
+		return this->bset.to_ulong() > mcb.bset.to_ulong();
 	}
 };
 
 class MorseTable
 {
 private:
-	vector<tuple<char, string, bitset<10>>> mTable;
+	vector<MorseCharBitset> mTable;
 	int size;
-	pair<char, string> dash;
-	pair<char, string> dot;
 public:
 	MorseTable()
 	{
 		size = 39;	//Morse Table size
 		mTable.resize(size);
-		dash.first = '-';
-		dash.second = "10"; //binary 01
-		dot.first = '.';
-		dot.second = "01"; //binary 10
 
-		get<0>(mTable[0]) = ' ';	get<1>(mTable[0]) = "..--";
-		get<0>(mTable[1]) = ',';	get<1>(mTable[0]) = "----";
-		get<0>(mTable[2]) = '.';	get<1>(mTable[0]) = "---.";
-		get<0>(mTable[3]) = '0';	get<1>(mTable[0]) = "-----";
-		get<0>(mTable[4]) = '1';	get<1>(mTable[0]) = ".----";
-		get<0>(mTable[5]) = '2';	get<1>(mTable[0]) = "..---";
-		get<0>(mTable[6]) = '3';	get<1>(mTable[0]) = "...--";
-		get<0>(mTable[7]) = '4';	get<1>(mTable[0]) = "....-";
-		get<0>(mTable[8]) = '5';	get<1>(mTable[0]) = ".....";
-		get<0>(mTable[9]) = '6';	get<1>(mTable[0]) = "-....";
-		get<0>(mTable[10]) = '7';	get<1>(mTable[0]) = "--...";
-		get<0>(mTable[11]) = '8';	get<1>(mTable[0]) = "---..";
-		get<0>(mTable[12]) = '9';	get<1>(mTable[0]) = "----.";
-		get<0>(mTable[13]) = 'A';	get<1>(mTable[0]) = ".-";
-		get<0>(mTable[14]) = 'B';	get<1>(mTable[0]) = "-...";
-		get<0>(mTable[15]) = 'C';	get<1>(mTable[0]) = "-.-.";
-		get<0>(mTable[16]) = 'D';	get<1>(mTable[0]) = "-..";
-		get<0>(mTable[17]) = 'E';	get<1>(mTable[0]) = ".";
-		get<0>(mTable[18]) = 'F';	get<1>(mTable[0]) = "..-.";
-		get<0>(mTable[19]) = 'G';	get<1>(mTable[0]) = "--.";
-		get<0>(mTable[20]) = 'H';	get<1>(mTable[0]) = "....";
-		get<0>(mTable[21]) = 'I';	get<1>(mTable[0]) = "..";
-		get<0>(mTable[22]) = 'J';	get<1>(mTable[0]) = ".---";
-		get<0>(mTable[23]) = 'K';	get<1>(mTable[0]) = "-.-";
-		get<0>(mTable[24]) = 'L';	get<1>(mTable[0]) = ".-..";
-		get<0>(mTable[25]) = 'M';	get<1>(mTable[0]) = "--";
-		get<0>(mTable[26]) = 'N';	get<1>(mTable[0]) = "-.";
-		get<0>(mTable[27]) = 'O';	get<1>(mTable[0]) = "---";
-		get<0>(mTable[28]) = 'P';	get<1>(mTable[0]) = ".--.";
-		get<0>(mTable[29]) = 'Q';	get<1>(mTable[0]) = "--.-";
-		get<0>(mTable[30]) = 'R';	get<1>(mTable[0]) = ".-.";
-		get<0>(mTable[31]) = 'S';	get<1>(mTable[0]) = "...";
-		get<0>(mTable[32]) = 'T';	get<1>(mTable[0]) = "-";
-		get<0>(mTable[33]) = 'U';	get<1>(mTable[0]) = "..-";
-		get<0>(mTable[34]) = 'V';	get<1>(mTable[0]) = "...-";
-		get<0>(mTable[35]) = 'W';	get<1>(mTable[0]) = ".--";
-		get<0>(mTable[36]) = 'X';	get<1>(mTable[0]) = "-..-";
-		get<0>(mTable[37]) = 'Y';	get<1>(mTable[0]) = "-.--";
-		get<0>(mTable[38]) = 'Z';	get<1>(mTable[0]) = "--..";
+		mTable[0].setMorseChar(' ', "..--");
+		mTable[1].setMorseChar(',', "----");
+		mTable[2].setMorseChar('.', "---.");
+		mTable[3].setMorseChar('0', "-----");
+		mTable[4].setMorseChar('1', ".----");
+		mTable[5].setMorseChar('2', "..---");
+		mTable[6].setMorseChar('3', "...--");
+		mTable[7].setMorseChar('4', "....-");
+		mTable[8].setMorseChar('5', ".....");
+		mTable[9].setMorseChar('6', "-....");
+		mTable[10].setMorseChar('7', "--...");
+		mTable[11].setMorseChar('8', "---..");
+		mTable[12].setMorseChar('9', "----.");
+		mTable[13].setMorseChar('A', ".-");
+		mTable[14].setMorseChar('B', "-...");
+		mTable[15].setMorseChar('C', "-.-.");
+		mTable[16].setMorseChar('D', "-..");
+		mTable[17].setMorseChar('E', ".");
+		mTable[18].setMorseChar('F', "..-.");
+		mTable[19].setMorseChar('G', "--.");
+		mTable[20].setMorseChar('H', "....");
+		mTable[21].setMorseChar('I', "..");
+		mTable[22].setMorseChar('J', ".---");
+		mTable[23].setMorseChar('K', "-.-");
+		mTable[24].setMorseChar('L', ".-..");
+		mTable[25].setMorseChar('M', "--");
+		mTable[26].setMorseChar('N', "-.");
+		mTable[27].setMorseChar('O', "---");
+		mTable[28].setMorseChar('P', ".--.");
+		mTable[29].setMorseChar('Q', "--.-");
+		mTable[30].setMorseChar('R', ".-.");
+		mTable[31].setMorseChar('S', "...");
+		mTable[32].setMorseChar('T', "-");
+		mTable[33].setMorseChar('U', "..-");
+		mTable[34].setMorseChar('V', "...-");
+		mTable[35].setMorseChar('W', ".--");
+		mTable[36].setMorseChar('X', "-..-");
+		mTable[37].setMorseChar('Y', "-.--");
+		mTable[38].setMorseChar('Z', "--..");
 	}
 
-	void setup()
+	vector<MorseCharBitset> getmTable()
 	{
-		for (int i = 0; i < 39; i++)
-		{
-
-		}
+		return mTable;
 	}
 };
 
-template <class T>
-class HashTable
+int getInt(MorseCharBitset mcb)
+{
+	return mcb.getBset().to_ulong();
+}
+
+template<typename T>
+class Node
+{
+protected:
+	T data;
+	int num;
+	Node<T>* left;
+	Node<T>* right;
+public:
+	Node()
+	{
+		left = 0;
+		right = 0;
+		num = 0;
+	}
+
+	Node(T d, int get(T))
+	{
+		data = d;
+		num = get(T);
+	}
+
+	T getData()
+	{
+		return T;
+	}
+
+	void setData(T d, int get(T))
+	{
+		data = d;
+		num = get(T);
+	}
+
+	void setNum(int n)
+	{
+		num = n;
+	}
+
+	int getNum()
+	{
+		return num;
+	}
+
+	Node<T>* getLeft()
+	{
+		return left;
+	}
+
+	Node<T>* getRight()
+	{
+		return right;
+	}
+
+	bool operator > (const Node& obj)
+	{
+		return this->num > obj.num;
+	}
+
+	bool operator == (const Node& obj)
+	{
+		return this->num == obj.num;
+	}
+
+	bool operator < (const Node& obj)
+	{
+		return this->num < obj.num;
+	}
+
+	Node<T> operator + (const Node& obj)
+	{
+		Node<T> temp;
+		temp.setNum(this->num + obj.num);
+		return temp;
+	}
+
+	virtual Node<T>* deCode(bool b)
+	{
+
+	}
+};
+
+template<typename T>
+class Branch : public Node<T>
+{
+public:
+	Branch(Node<T>* pL, Node<T>* pR)
+	{
+		left = pL;
+		right = pR;
+		this->num = pL->getNum() + pR->getNum();
+	}
+	
+	Node<T>* deCode(bool b)
+	{
+		if (b)
+			return this->right;
+		else
+			return this->left;
+	}
+};
+
+template<typename T>
+class Leaf : public Node<T>
+{
+public:
+	Node<T>* deCode(bool b)
+	{
+		return this;
+	}
+};
+
+
+
+template<typename T>
+class HuffmanTree
 {
 private:
-	vector<T> table;
-	int hash(bitset<10> bs) const
+	Node<T>* rootPtr;
+	priority_queue<Node<T>, vector<Node<T>>, greater<Node<T>>> priQue;
+	void setup(vector<MorseCharBitset> mTable)
 	{
-		return bs.to_ulong();
+		for (auto i : mTable)
+		{
+			Node<T>* pNode = new Leaf<T>(i, getInt);
+			priQue.push(*pNode);
+		}
 	}
-	int count;
-	int size;
+
+	void buildTree()
+	{
+		Node<T>* qLeft;
+		Node<T>* qRight;
+		while (priQue.size() > 1)
+		{
+			qLeft = &priQue.top();
+			priQue.pop();
+			qRight = &priQue.top();
+			priQue.pop();
+			Node<T>* pNode = new Branch<T>(qLeft, qRight);
+			priQue.push(pNode);
+		}
+	}
 public:
-	HashTable()
+	HuffmanTree()
 	{
-		count = 0;
-		size = 682; //binary 1010101010 = decimal 682
-		table.resize(682);
+		rootPtr = 0;
 	}
 
-	HashTable(int s)
+	HuffmanTree(vector<MorseCharBitset> mb)
 	{
-		count = 0;
-		size = s;
-		table.resize(s);
+		rootPtr = 0;
+		setup(mb);
 	}
 
-	int getCount()
+	void setPriQue(vector<MorseCharBitset> mb)
 	{
-		return count;
+		setup(mb);
 	}
 
-	int getSize()
-	{
-		return size;
-	}
-
-	bool insert(T value)
-	{
-
-	}
-
-	bool remove()
-	{
-
-	}
-
-	bool search()
-	{
-
-	}
 };
 
 
@@ -165,7 +332,8 @@ class Decrypt	//Get a bool from the input file, nodePtr->decode(bool), loop unti
 
 int main()
 {
-	int* a;
+	MorseTable table;
+	HuffmanTree<MorseCharBitset*> tree(table.getmTable());
 	cout << "Hello world" << endl;
 	return 0;
 }
