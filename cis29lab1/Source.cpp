@@ -54,7 +54,7 @@ private:
 		string mdot = "10";
 		string mdash = "01";
 		string s = regex_replace(morse, rdot, mdot);
-		s = regex_replace(s, rdash, mdot);
+		s = regex_replace(s, rdash, mdash);
 		bitset<10> temp(s);
 		bset = temp;
 	}
@@ -192,7 +192,7 @@ public:
 	void setData(T d, int get(T))
 	{
 		data = d;
-		num = get(T);
+		num = get(d);
 	}
 
 	void setNum(int n)
@@ -215,22 +215,22 @@ public:
 		return right;
 	}
 
-	bool operator > (const Node& obj)
+	bool operator > (const Node<T>& obj)
 	{
 		return this->num > obj.num;
 	}
 
-	bool operator == (const Node& obj)
+	bool operator == (const Node<T>& obj)
 	{
 		return this->num == obj.num;
 	}
 
-	bool operator < (const Node& obj)
+	bool operator < (const Node<T>& obj)
 	{
 		return this->num < obj.num;
 	}
 
-	Node<T> operator + (const Node& obj)
+	Node<T> operator + (const Node<T>& obj)
 	{
 		Node<T> temp;
 		temp.setNum(this->num + obj.num);
@@ -239,7 +239,7 @@ public:
 
 	virtual Node<T>* deCode(bool b)
 	{
-
+		return NULL;
 	}
 };
 
@@ -249,8 +249,8 @@ class Branch : public Node<T>
 public:
 	Branch(Node<T>* pL, Node<T>* pR)
 	{
-		left = pL;
-		right = pR;
+		this->left = pL;
+		this->right = pR;
 		this->num = pL->getNum() + pR->getNum();
 	}
 	
@@ -273,6 +273,14 @@ public:
 	}
 };
 
+template<typename T>
+struct larger 
+{
+	bool operator()(Node<T> a, Node<T> b) 
+	{
+		return a > b;
+	}
+};
 
 
 template<typename T>
@@ -280,12 +288,14 @@ class HuffmanTree
 {
 private:
 	Node<T>* rootPtr;
-	priority_queue<Node<T>, vector<Node<T>>, greater<Node<T>>> priQue;
-	void setup(vector<MorseCharBitset> mTable)
+	priority_queue<Node<T>, vector<Node<T>>, larger<T>> priQue;
+	vector<Node<T>> nodes;
+	void setup(vector<T> mTable)
 	{
 		for (auto i : mTable)
 		{
-			Node<T>* pNode = new Leaf<T>(i, getInt);
+			Node<T>* pNode = new Leaf<T>;
+			pNode->setData(i, getInt);
 			priQue.push(*pNode);
 		}
 	}
@@ -296,12 +306,16 @@ private:
 		Node<T>* qRight;
 		while (priQue.size() > 1)
 		{
-			qLeft = &priQue.top();
+			Node<T> temp1 = priQue.top();
+			nodes.push_back(temp1);
+			qLeft = &temp1;
 			priQue.pop();
-			qRight = &priQue.top();
+			Node<T> temp2 = priQue.top();
+			nodes.push_back(temp2);
+			qRight = &temp2;
 			priQue.pop();
 			Node<T>* pNode = new Branch<T>(qLeft, qRight);
-			priQue.push(pNode);
+			priQue.push(*pNode);
 		}
 	}
 public:
@@ -310,15 +324,20 @@ public:
 		rootPtr = 0;
 	}
 
-	HuffmanTree(vector<MorseCharBitset> mb)
+	HuffmanTree(vector<T> mb)
 	{
-		rootPtr = 0;
 		setup(mb);
+		buildTree();
+		Node<T> temp = priQue.top();
+		rootPtr = &temp;
 	}
 
-	void setPriQue(vector<MorseCharBitset> mb)
+	void setPriQue(vector<T> mb)
 	{
 		setup(mb);
+		buildTree();
+		Node<T> temp = priQue.top();
+		rootPtr = &temp;
 	}
 
 };
@@ -333,7 +352,7 @@ class Decrypt	//Get a bool from the input file, nodePtr->decode(bool), loop unti
 int main()
 {
 	MorseTable table;
-	HuffmanTree<MorseCharBitset*> tree(table.getmTable());
+	HuffmanTree<MorseCharBitset> tree(table.getmTable());
 	cout << "Hello world" << endl;
 	return 0;
 }
