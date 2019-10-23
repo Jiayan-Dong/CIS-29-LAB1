@@ -314,11 +314,18 @@ private:
 	{
 		while (priQue.size() > 1)
 		{
-			
+			bool flag = true;
 			Node<T>* qLeft = priQue.top();
 			nodes.push_back(qLeft);
 			priQue.pop();
 			Node<T>* qRight = priQue.top();
+			if (qRight->getNum() == 85 && flag)
+			{
+				priQue.pop();
+				priQue.push(qRight);
+				qRight = priQue.top();
+				flag = false;
+			}
 			nodes.push_back(qRight);
 			priQue.pop();
 			Node<T>* pNode = new Branch<T>(qLeft, qRight);
