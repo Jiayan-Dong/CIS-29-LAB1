@@ -41,6 +41,16 @@ public:
 	{
 		morse = m;
 	}
+
+	char getCharacter()
+	{
+		return character;
+	}
+
+	string getMorse()
+	{
+		return morse;
+	}
 };
 
 class MorseCharBitset : public MorseChar
@@ -186,7 +196,7 @@ public:
 
 	T getData()
 	{
-		return T;
+		return data;
 	}
 
 	void setData(T d, int get(T))
@@ -276,9 +286,9 @@ public:
 template<typename T>
 struct larger 
 {
-	bool operator()(Node<T> a, Node<T> b) 
+	bool operator()(Node<T>* a, Node<T>* b) 
 	{
-		return a > b;
+		return *a > *b;
 	}
 };
 
@@ -288,34 +298,31 @@ class HuffmanTree
 {
 private:
 	Node<T>* rootPtr;
-	priority_queue<Node<T>, vector<Node<T>>, larger<T>> priQue;
-	vector<Node<T>> nodes;
+	priority_queue<Node<T>*, vector<Node<T>*>, larger<T>> priQue;
+	vector<Node<T>*> nodes;
 	void setup(vector<T> mTable)
 	{
 		for (auto i : mTable)
 		{
 			Node<T>* pNode = new Leaf<T>;
 			pNode->setData(i, getInt);
-			priQue.push(*pNode);
+			priQue.push(pNode);
 		}
 	}
 
 	void buildTree()
 	{
-		Node<T>* qLeft;
-		Node<T>* qRight;
 		while (priQue.size() > 1)
 		{
-			Node<T> temp1 = priQue.top();
-			nodes.push_back(temp1);
-			qLeft = &temp1;
+			
+			Node<T>* qLeft = priQue.top();
+			nodes.push_back(qLeft);
 			priQue.pop();
-			Node<T> temp2 = priQue.top();
-			nodes.push_back(temp2);
-			qRight = &temp2;
+			Node<T>* qRight = priQue.top();
+			nodes.push_back(qRight);
 			priQue.pop();
 			Node<T>* pNode = new Branch<T>(qLeft, qRight);
-			priQue.push(*pNode);
+			priQue.push(pNode);
 		}
 	}
 public:
@@ -328,31 +335,84 @@ public:
 	{
 		setup(mb);
 		buildTree();
-		Node<T> temp = priQue.top();
-		rootPtr = &temp;
+		rootPtr = priQue.top();
 	}
 
 	void setPriQue(vector<T> mb)
 	{
 		setup(mb);
 		buildTree();
-		Node<T> temp = priQue.top();
-		rootPtr = &temp;
+		rootPtr = priQue.top();
 	}
 
+	Node<T>* getRoot()
+	{
+		return rootPtr;
+	}
 };
 
 
 class Decrypt	//Get a bool from the input file, nodePtr->decode(bool), loop until the nodePtr does not change and then get the data.
 				//Using the bool when the nodePte doesn't change to start next decode
 {
+private:
+	Node<MorseCharBitset>* rootPtr;
+	string input;
+	string output;
+public:
+	Decrypt(Node<MorseCharBitset>* r, string i, string o)
+	{
+		input = i;
+		output = o;
+		rootPtr = r;
+	}
 
+	void de()
+	{
+		ifstream fin(input, ios::in | ios::binary);
+		ofstream fout(output);
+		unsigned char* memblock = 0;
+		int isize = 0;
+		if (fin.is_open())
+		{
+			fin.seekg(0, ios::end);
+			streampos size;
+			size = fin.tellg();
+			isize = size;
+			memblock = new unsigned char[size];
+			fin.seekg(0, ios::beg);
+			fin.read((char*)memblock, size);
+		}
+		Node<MorseCharBitset>* nP1 = rootPtr;
+		Node<MorseCharBitset>* nP2 = rootPtr;
+		for (int i = 0; i < isize; i++)
+		{
+			bitset<8> bset(memblock[i]);
+			for (int j = 7; j >=0; j--)
+			{
+				bool b = bset[j];
+				nP2 = nP1->deCode(b);
+				if (nP2 != nP1)
+					nP1 = nP2;
+				else
+				{
+					fout << nP1->getData().getCharacter();
+					j++;
+					nP1 = rootPtr;
+					nP2 = rootPtr;
+				}
+			}
+		}
+		
+	}
 };
 
 int main()
 {
 	MorseTable table;
 	HuffmanTree<MorseCharBitset> tree(table.getmTable());
+	Decrypt decry(tree.getRoot(), "Encrypt.bin", "Output.txt");
+	decry.de();
 	cout << "Hello world" << endl;
 	return 0;
 }
