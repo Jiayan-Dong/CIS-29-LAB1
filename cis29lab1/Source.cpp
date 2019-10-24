@@ -1,6 +1,6 @@
 /*
-Cis29 
-Lab1 - Bit Decryption 
+Cis29
+Lab1 - Bit Decryption
 Name: Jiayan Dong
 Last Modified: 10/23/2019
 Techniques/Structures:
@@ -17,7 +17,6 @@ MorseTable is given in the QueueTree.pdf.
 #include <queue>
 #include <bitset>
 #include <regex>
-#include <algorithm>
 
 using namespace std;
 
@@ -107,8 +106,8 @@ public:
 		return bset;
 	}
 
-	//Overload compare operators to compare MorseCharBitset 
-	bool operator < (const MorseCharBitset &mcb)
+	//Overload compare operators to compare MorseCharBitset
+	bool operator < (const MorseCharBitset& mcb)
 	{
 		return this->bset.to_ulong() < mcb.bset.to_ulong();
 	}
@@ -192,7 +191,7 @@ int getInt(MorseCharBitset mcb)
 	return mcb.getBset().to_ulong();
 }
 
-//Template class Node to create the Huffman Tree, this class will be used as a parent class 
+//Template class Node to create the Huffman Tree, this class will be used as a parent class
 template<typename T>
 class Node
 {
@@ -248,8 +247,8 @@ public:
 	{
 		num = n;
 	}
-	
-	//Overload compare operators to compare MorseCharBitset 
+
+	//Overload compare operators to compare MorseCharBitset
 	bool operator > (const Node<T>& obj)
 	{
 		return this->num > obj.num;
@@ -263,14 +262,6 @@ public:
 	bool operator < (const Node<T>& obj)
 	{
 		return this->num < obj.num;
-	}
-
-	//Overload addition operator to add two Node object, it returns a object has the sum of nums in two input objects
-	Node<T> operator + (const Node<T>& obj)
-	{
-		Node<T> temp;
-		temp.setNum(this->num + obj.num);
-		return temp;
 	}
 
 	//Pure Virtual member fucntion to achieve Polymorphism
@@ -317,22 +308,22 @@ public:
 
 //Template Struct larger to be passed to priority_queue
 template<typename T>
-struct larger 
+struct larger
 {
 	//Overload () operator to compare Node, it takes two Node pointers as parameters
 	//If the the object pointed by the first Node is larger the object pointed by the second Node, return ture, ohterwise return false.
-	bool operator()(Node<T>* a, Node<T>* b) 
+	bool operator()(Node<T>* a, Node<T>* b)
 	{
-		return *a > *b;
+		return *a > * b;
 	}
 };
 
-//Template Class HuffmanTree to create and store the huffman tree that are used to decode files 
+//Template Class HuffmanTree to create and store the huffman tree that are used to decode files
 template<typename T>
 class HuffmanTree
 {
 private:
-	Node<T>* rootPtr;	//Root pointer of the huffman tree 
+	Node<T>* rootPtr;	//Root pointer of the huffman tree
 	priority_queue<Node<T>*, vector<Node<T>*>, larger<T>> priQue;	//priority queue used to create the huffman tree
 	vector<Node<T>*> nodes;	//vector nodes stores Node pointers that are used in Dynamic memory allocation
 	// private function Setup to set up the priority queue by using a table
@@ -355,7 +346,7 @@ private:
 			nodes.push_back(qLeft);
 			priQue.pop();
 			Node<T>* qRight = priQue.top();
-			if (qRight->getNum() == 85 && flag)	// The encrypt file uses a tree that is different from mine, I have to adjust my tree here 
+			if (qRight->getNum() == 85 && flag)	// The encrypt file uses a tree that is different from mine, I have to adjust my tree here
 			{
 				priQue.pop();
 				priQue.push(qRight);
@@ -383,7 +374,7 @@ public:
 		rootPtr = priQue.top();
 	}
 
-	//Defualt destuctor to free Dynamic allocated memory  
+	//Defualt destuctor to free Dynamic allocated memory
 	~HuffmanTree()
 	{
 		for (auto i : nodes)
@@ -405,8 +396,7 @@ public:
 	}
 };
 
-
-class Decrypt	
+class Decrypt
 
 {
 private:
@@ -427,7 +417,6 @@ public:
 	void decrypt()
 	{
 		ifstream fin(input, ios::in | ios::binary);
-		ofstream fout(output);
 		unsigned char* memblock = 0;
 		int isize = 0;
 		if (!fin)
@@ -436,6 +425,7 @@ public:
 			system("pause");
 			exit(EXIT_FAILURE);
 		}
+		ofstream fout(output);
 		if (fin.is_open())
 		{
 			fin.seekg(0, ios::end);
@@ -451,7 +441,7 @@ public:
 		for (int i = 0; i < isize; i++)
 		{
 			bitset<8> bset(memblock[i]);
-			for (int j = 7; j >=0; j--)
+			for (int j = 7; j >= 0; j--)
 			{
 				bool b = bset[j];
 				nP2 = nP1->deCode(b);
@@ -479,12 +469,12 @@ int main()
 
 	cout << "Welcome to Bit Decryption Program" << endl;
 	cout << "This program use Using the Morse Table as shown in the QueueTree.pdf to decrypt the bit-encrypted file" << endl << endl;
-	cout << "Please enter the plaintext filename to decrypt(with filename extension): ";
+	cout << "Please enter the filename of the binary file to decrypt(with filename extension): ";
 	getline(cin, filename);
 	cout << "Please enter the output filename(with filename extension): ";
 	getline(cin, outputName);
 	Decrypt decry(tree.getRoot(), filename, outputName);
-	decry.decrypt();	//Decrypt the input file and output the decrypted file  
+	decry.decrypt();	//Decrypt the input file and output the decrypted file
 	cout << "The file has been decrypted and saved. Thank you!" << endl;
 
 	system("pause");
